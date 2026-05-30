@@ -78,19 +78,20 @@ jobs:
           # 1. 创建 Playwright 预期的缓存目录
           mkdir -p /home/runner/.cache/ms-playwright/chromium-1208
           
-          # 2. 用 Linux 绝对最稳的 curl 下载官方包（后台静默下载，防止进度条挂起）
+          # 2. 用 Linux 绝对最稳的 curl 下载官方包
           echo "Starting download via curl..."
           curl -sSL "https://cdn.playwright.dev/builds/cft/145.0.7632.6/linux64/chrome-linux64.zip" -o /tmp/chrome.zip
           
-          # 3. 用 Linux 原生的 unzip 物理强行解压（带 -q 静默参数，防日志撑爆死锁）
+          # 3. 用 Linux 原生的 unzip 物理强行解压
           echo "Extracting chromium..."
           unzip -q /tmp/chrome.zip -d /tmp/extracted_chrome
           
-          # 4. 把解压出来的东西，挪到 Playwright 默认要读取的那个绝对路径
-          # 核心关键：playwright 找的是这个目录下的 chrome-linux 文件夹
-          mv /tmp/extracted_chrome/chrome-linux/* /home/runner/.cache/ms-playwright/chromium-1208/
+          # 4. 【修正路径】挪到 Playwright 默认要读取的那个绝对路径
+          # 注意：解压出来的根目录叫 chrome-linux64
+          echo "Moving files to playwright cache..."
+          mv /tmp/extracted_chrome/chrome-linux64/* /home/runner/.cache/ms-playwright/chromium-1208/
           
-          # 5. 清理垃圾，假装 Playwright 自己下载成功了
+          # 5. 清理垃圾
           rm -rf /tmp/chrome.zip /tmp/extracted_chrome
           echo "Chromium successfully injected manually!"
         shell: bash
