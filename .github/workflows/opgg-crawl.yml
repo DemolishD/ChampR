@@ -117,13 +117,47 @@ jobs:
           echo "[ci] Running: pnpm start $ARGS"
           pnpm start $ARGS
 
+      # ================== ✨ 新增：自动化重组路径结构 ==================
+      - name: Restructure JSON for LoL Recommended Folder
+        working-directory: packages/opgg
+        run: |
+          TARGET_DIR="./output/${{ matrix.mode }}"
+          echo "Restructuring JSON files in $TARGET_DIR..."
+          
+          # 进入输出目录
+          cd "$TARGET_DIR"
+          
+          # 遍历所有英雄的 JSON 文件（排除报告文件本身）
+          for file in *.json; do
+            # 如果没有匹配到任何 json 文件，退出循环
+            [ -e "$file" ] || continue
+            
+            # 排除掉爬虫本身的全局报告文件，不让它生成文件夹
+            if [[ "$file" == "crawl-report"* ]]; then
+              echo "Skipping report file: $file"
+              continue
+            fi
+            
+            # 获取去除后缀后的英雄名字（如 Aatrox）
+            champ_name="${file%.json}"
+            
+            # 创建对应的英雄文件夹
+            mkdir -p "$champ_name"
+            
+            # 把 JSON 文件丢进去，并统一规范命名为 opgg_set.json（或者保持 $file 均可）
+            # 游戏里只要在文件夹下，文件名叫什么都可以识别
+            mv "$file" "$champ_name/"
+          done
+          echo "Restructure completed!"
+      # ==================================================================
+
       - name: Write job summary
         if: always()
         working-directory: packages/opgg
         run: |
           MODE="${{ matrix.mode }}"
+          # 【注意】因为上面移动了文件，如果 crawl-report 没被移走，这里路径依然有效
           REPORT_FILE="./output/${MODE}/crawl-report.json"
-          # aram/urf/aram-mayhem use a suffixed filename
           if [ "$MODE" != "ranked" ]; then
             REPORT_FILE="./output/${MODE}/crawl-report-${MODE}.json"
           fi
