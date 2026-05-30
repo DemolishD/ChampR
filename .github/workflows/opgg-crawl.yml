@@ -74,8 +74,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Chromium
-        run: pnpm exec playwright install chromium
         working-directory: packages/opgg
+        # 强制设置免除额外交互，并只精准安装 chromium
+        run: |
+          pnpm exec playwright install chromium
 
       - name: Run crawler
         working-directory: packages/opgg
