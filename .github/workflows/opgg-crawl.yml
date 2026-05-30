@@ -73,29 +73,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Hardcore Manual Install Chromium (Bypass Playwright Hang)
+      - name: Hardcore Manual Install Headless Shell (Bypass Playwright Hang)
         run: |
-          # 1. 创建 Playwright 预期的缓存目录
-          mkdir -p /home/runner/.cache/ms-playwright/chromium-1208
+          # 1. 创建爬虫程序真正想要的绝对路径
+          mkdir -p /home/runner/.cache/ms-playwright/chromium_headless_shell-1208
           
-          # 2. 用 Linux 绝对最稳的 curl 下载官方包
-          echo "Starting download via curl..."
-          curl -sSL "https://cdn.playwright.dev/builds/cft/145.0.7632.6/linux64/chrome-linux64.zip" -o /tmp/chrome.zip
+          # 2. 用 Linux 最稳的 curl 顺着网线直接下载它要的 headless-shell 包
+          echo "Downloading target headless shell..."
+          curl -sSL "https://cdn.playwright.dev/builds/cft/145.0.7632.6/linux64/chrome-headless-shell-linux64.zip" -o /tmp/shell.zip
           
-          # 3. 用 Linux 原生的 unzip 物理强行解压
-          echo "Extracting chromium..."
-          unzip -q /tmp/chrome.zip -d /tmp/extracted_chrome
+          # 3. 原生静默解压
+          echo "Extracting shell..."
+          unzip -q /tmp/shell.zip -d /tmp/extracted_shell
           
-          # 4. 【修正路径】挪到 Playwright 默认要读取的那个绝对路径
-          # 注意：解压出来的根目录叫 chrome-linux64
-          echo "Moving files to playwright cache..."
-          mv /tmp/extracted_chrome/chrome-linux64/* /home/runner/.cache/ms-playwright/chromium-1208/
+          # 4. 严格按照报错里的预期路径，把解压出来的文件夹整个挪过去
+          # 报错里找的是：.../chromium_headless_shell-1208/chrome-headless-shell-linux64/
+          echo "Injecting into expected directory..."
+          mv /tmp/extracted_shell/chrome-headless-shell-linux64 /home/runner/.cache/ms-playwright/chromium_headless_shell-1208/
           
-          # 5. 清理垃圾
-          rm -rf /tmp/chrome.zip /tmp/extracted_chrome
-          echo "Chromium successfully injected manually!"
+          # 5. 清理现场
+          rm -rf /tmp/shell.zip /tmp/extracted_shell
+          echo "Headless Shell successfully injected manually!"
         shell: bash
-
+        
       - name: Run crawler
         working-directory: packages/opgg
         run: |
